@@ -14,13 +14,13 @@ int createStudentFromFileTxt(FILE* file, Student* student) {
 	return 1;
 }
 
-int compareStudentId(const void* st1, const void* id) {
-	Student* tempSt = st1;
-	int tempId = id;
-	if (tempSt->id > tempId) {
+int compareStudentId(const void* st1, const void* st2) {
+	Student* tempSt1 = (Student*)st1;
+	Student* tempSt2 = (Student*)st2;
+	if (tempSt1->id > tempSt2->id) {
 		return 1; //tempSt id is greater.
 	}
-	else if (tempSt->id < tempId) {
+	else if (tempSt1->id < tempSt2->id) {
 		return -1; //tempSt id is smaller.
 	}
 	else {
@@ -72,3 +72,6 @@ int compareStudentGradeDegree(const void* st1, const void* st2) {
 	}
 }
 
+void showStudent(Student* student) {
+	printf("%d %d %d", student->id, student->type, student->grade);
+}

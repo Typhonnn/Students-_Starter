@@ -11,8 +11,10 @@ typedef struct {
 
 int createStudentFromFileTxt(FILE* file, Student* student);
 
-int compareStudentId(const void* st1, const void* id);
+int compareStudentId(const void* st1, const void* st2);
 
 int compareStudentDegreeId(const void* st1, const void* st2);
 
 int compareStudentGradeDegree(const void* st1, const void* st2);
+
+void showStudent(Student* student);

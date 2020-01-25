@@ -57,9 +57,11 @@ int createSchoolFromFileBinary(FILE* file, School* school) {
 		for (j = 0; j < school->countInClass && !feof(file); j++) {
 			fread(&school->studentArr[i][j].id, sizeof(int), 1, file);
 			unsigned char temp = 0;
+			unsigned int mask = 0;
 			fread(&temp, sizeof(unsigned char), 1, file);
 			school->studentArr[i][j].grade |= temp & 127;
-			school->studentArr[i][j].type |= temp & 128;
+			mask = temp & 128;
+			school->studentArr[i][j].type |= mask >> 7;
 		}
 	}
 	fclose(file);
@@ -84,8 +86,8 @@ int createSchoolFromFileTxt(FILE* file, School* school) {
 		return 0;
 	}
 	for (i = 0; i < school->classCount; i++) {
+		school->studentArr[i] = calloc(school->countInClass, sizeof(Student));
 		for (j = 0; j < school->countInClass; j++) {
-			school->studentArr[i] = calloc(school->countInClass, sizeof(Student));
 			if (school->studentArr[i] == NULL) {
 				printf("Failed to allocate memory for students in class! ABORTING!");
 				fclose(file);
@@ -116,8 +118,8 @@ void saveSchoolToBinaryFile(char* fileName, School* school) {
 		for (j = 0; j < school->countInClass; j++) {
 			fwrite(&school->studentArr[i][j].id, sizeof(int), 1, file);
 			unsigned char temp = 0;
-			temp |= (school->studentArr[i][j].grade & 127) >> 7;
-			temp |= (school->studentArr[i][j].type << 8) & 128;
+			temp |= school->studentArr[i][j].grade & 127;
+			temp |= (school->studentArr[i][j].type << 7) & 128;
 			fwrite(&temp, sizeof(unsigned char), 1, file);
 		}
 	}
@@ -136,16 +138,20 @@ void sortEachClassInSchool(School* school, int(*compare)(const void* st1, const 
 }
 
 void searchStudentInSchool(School* school, int id) {
-	int i, *foundStudent = 0;
+	sortEachClassInSchool(school, compareStudentDegreeId);
+	int i;
+	Student temp;
+	Student *foundStudent;
+	temp.id = id;
 	if (school == NULL) {
 		printf("No school found! Failed to bsearch! ABORTING!");
 		return;
 	}
 	for ( i = 0; i < school->classCount; i++)	{
-		foundStudent = bsearch(&id, school->studentArr[i], school->countInClass, sizeof(Student), compareStudentId);
+		foundStudent = bsearch(&temp, school->studentArr[i], school->countInClass, sizeof(Student), compareStudentId);
 			if (foundStudent != NULL) {
 				printf("Student found in class No.%d:\n", i + 1);
-				printf("Student No.%d: %d %d %d\n", *foundStudent, school->studentArr[i][*foundStudent].id, school->studentArr[i][*foundStudent].type, school->studentArr[i][*foundStudent].grade);
+				showStudent(foundStudent);
 				return;
 			}
 	}
@@ -166,25 +172,17 @@ void showSchool(School* school) {
 }
 
 void freeSchool(School* school) {
-	int i, j;
+	int i;
 	if (school == NULL) {
 		return;
 	}
 	if (school->studentArr == NULL) {
 		return;
 	}
+	Student* st1 = &school->studentArr[1][3];
 	for (i = 0; i < school->classCount; i++) {
-		if (school->studentArr[i] == NULL) {
-		}
-		else {
-			for (j = 0; j < school->countInClass; j++)
-			{
-				free(&school->studentArr[i][j]);
-			}
-		}
 		free(school->studentArr[i]);
 	}
 	free(school->studentArr);
-	free(school);
 }
 
